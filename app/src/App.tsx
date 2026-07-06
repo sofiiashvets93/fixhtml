@@ -652,13 +652,14 @@ export function App() {
 
         {selectedPath && pageCount === 0 && (
           <>
-            <p className="section-label" style={{ marginTop: 24 }}>Free-form asset</p>
+            <p className="section-label" style={{ marginTop: 24 }}>Not editable yet</p>
             <p className="readout muted">
-              No <code>.hs-page</code> yet, so nothing is draggable. Freeze pins each block
-              in place, pixel-for-pixel, into a contract asset.
+              This design isn&apos;t split into movable elements yet. Edit layers pins each
+              block in place — pixel-identical — so you can drag, resize, rotate, and
+              restyle them.
             </p>
             <button className="freeze-btn" onClick={runFreeze} disabled={freezing}>
-              {freezing ? 'Freezing…' : 'Freeze to contract'}
+              {freezing ? 'Preparing layers…' : 'Edit layers'}
             </button>
           </>
         )}

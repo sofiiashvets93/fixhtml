@@ -12,3 +12,4 @@ assets/imported/
 dist-site/
 fonts/library/
 fonts/registry.json
+*.tmp.*
