@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wrapped panel (single-wrapper)</title>
+<style>
+  /* NOT contract-conforming. The dominant AI shape: a bare centering wrapper
+     around ONE styled panel that holds all the content. Naive freeze lifts the
+     wrapper's single child (the panel) = 1 .hs-el, nothing individually draggable.
+     The fix descends into the styled panel and lifts its blocks. */
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background: #05070d;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  /* .wrap: a bare layout wrapper — no box of its own (passed through by freeze) */
+  .wrap { display: flex; }
+  /* .panel: the styled artboard — background, border, shadow, padding (freeze keeps
+     its box and lifts its children) */
+  .panel {
+    width: 1080px; height: 1350px;
+    background: linear-gradient(160deg, #141b2e 0%, #0b1020 100%);
+    border: 1px solid #263049;
+    border-radius: 28px;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+    padding: 96px 80px;
+    display: flex; flex-direction: column; gap: 44px;
+    color: #eef2f8;
+  }
+  .eyebrow { color: #22d3ee; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700; font-size: 24px; }
+  h1 { font-size: 78px; line-height: 1.04; font-weight: 800; }
+  .stat { font-size: 132px; font-weight: 800; color: #4f8cff; line-height: 1; }
+  .note { font-size: 32px; line-height: 1.45; color: #9fb0c8; max-width: 760px; }
+  .cta { margin-top: auto; align-self: flex-start; background: #4f8cff; color: #05070d; font-weight: 700; font-size: 30px; padding: 20px 34px; border-radius: 999px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="eyebrow">Quarterly report</div>
+      <h1>Uptime held above the line all quarter.</h1>
+      <div class="stat">99.98%</div>
+      <div class="note">Five content blocks inside one styled panel — each should
+        become an individually draggable object after freeze.</div>
+      <div class="cta">See the breakdown →</div>
+    </div>
+  </div>
+</body>
+</html>

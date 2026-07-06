@@ -1,0 +1,75 @@
+/* Generated from brand.json by scripts/build-brand.mjs — do not edit by hand. */
+@font-face {
+  font-family: "Archivo Black";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/library/archivo-black/archivo-black-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/library/space-grotesk/space-grotesk-latin-300-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/library/space-grotesk/space-grotesk-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/library/space-grotesk/space-grotesk-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/library/space-grotesk/space-grotesk-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/library/space-grotesk/space-grotesk-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Gloria Hallelujah";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/custom/gloria-hallelujah/gloria-hallelujah-latin-400-normal.woff2") format("woff2");
+}
+
+:root {
+  --brand-bg: #1a1a1a;
+  --brand-surface: #2d2d2d;
+  --brand-accent: #ff5722;
+  --brand-accent-text: #1a1a1a;
+  --brand-text: #ffffff;
+  --brand-text-muted: #9ca3af;
+  --brand-font-display: "Archivo Black", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --brand-weight-display: 400;
+  --brand-font-body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --brand-weight-body: 400;
+  --brand-font-hand: "Gloria Hallelujah", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --brand-weight-hand: 400;
+  --brand-space-unit: 8px;
+  --brand-space-1: 8px;
+  --brand-space-2: 16px;
+  --brand-space-3: 24px;
+  --brand-space-4: 40px;
+  --brand-space-5: 64px;
+  --brand-space-6: 104px;
+  --brand-radius-sm: 8px;
+  --brand-radius-lg: 24px;
+  --brand-elevation-card: 0 8px 32px rgba(0,0,0,.35);
+}

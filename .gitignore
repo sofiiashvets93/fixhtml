@@ -1,0 +1,14 @@
+node_modules/
+dist/
+exports/*
+!exports/.gitkeep
+*.draft.html
+*.log
+.DS_Store
+*-frozen.html
+dist-demo/
+assets/imported/
+*.tsbuildinfo
+dist-site/
+fonts/library/
+fonts/registry.json

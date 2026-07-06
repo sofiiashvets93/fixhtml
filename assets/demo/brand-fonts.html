@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>demo — brand fonts sample</title>
+<!-- Self-hosted brand fonts: tokens.css carries @font-face for Archivo Black
+     (library) + Gloria Hallelujah (custom). No network fonts, so the editor and
+     Playwright export render identically. -->
+<link rel="stylesheet" href="../../brands/demo/tokens.css">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: var(--brand-bg); }
+  body {
+    display: flex; flex-direction: column; align-items: center;
+    gap: var(--brand-space-4); padding: var(--brand-space-4);
+    font-family: var(--brand-font-body);
+  }
+  .hs-page { position: relative; overflow: hidden; }
+  .hs-el { position: absolute; }
+  .hs-page {
+    width: 1080px; height: 1350px; flex: 0 0 auto;
+    background: var(--brand-bg); color: var(--brand-text);
+    box-shadow: var(--brand-elevation-card);
+  }
+  .eyebrow { font-family: var(--brand-font-body); font-size: 28px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-text-muted); }
+  .display {
+    font-family: var(--brand-font-display); font-weight: var(--brand-weight-display);
+    font-size: 128px; line-height: 0.98; letter-spacing: -0.01em;
+  }
+  .display em { font-style: normal; color: var(--brand-accent); }
+  /* custom handwritten annotation */
+  .hand { font-family: var(--brand-font-hand); font-size: 64px; color: var(--brand-accent); line-height: 1.1; }
+  .body { font-family: var(--brand-font-body); font-size: 34px; line-height: 1.45; color: var(--brand-text-muted); }
+</style>
+</head>
+<body>
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el eyebrow" style="left:80px; top:96px; width:820px;">Self-hosted type</div>
+    <div class="hs-el display" style="left:80px; top:180px; width:940px;">Set in <em>Archivo Black</em>.</div>
+    <div class="hs-el hand" style="left:80px; top:720px; width:820px;">…and a note in my own hand.</div>
+    <div class="hs-el body" style="left:80px; top:900px; width:820px;">
+      Both faces ship in tokens.css as <code>@font-face</code> — one from the library,
+      one custom — so the editor and the exported PNG render identically.
+    </div>
+  </div>
+</body>
+</html>

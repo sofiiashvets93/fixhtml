@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>@font-face with a relative file that didn't travel</title>
+<style>
+  /* The @font-face is declared, but its src is a relative file that never
+     accompanied this single uploaded HTML — so it fails to load and falls back.
+     document.fonts.check() DOES catch this one (declared-but-unloaded), and
+     measurement agrees. */
+  @font-face {
+    font-family: "Relative Ghost";
+    src: url("./fonts/relative-ghost.woff2") format("woff2");
+    font-display: swap;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #0e1220; }
+  body { display: flex; justify-content: center; padding: 40px; }
+  .hs-page { position: relative; overflow: hidden; width: 1080px; height: 1350px; background: #0e1220; color: #eaf0ff; }
+  .hs-el { position: absolute; }
+  .headline { font-family: "Relative Ghost", system-ui, sans-serif; font-size: 128px; line-height: 1.02; color: #8ab4ff; }
+  .body { font-family: system-ui, sans-serif; font-size: 34px; line-height: 1.4; color: #aeb8cc; }
+</style>
+</head>
+<body>
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el headline" style="left:80px; top:200px; width:940px;">Ghost of a font.</div>
+    <div class="hs-el body" style="left:80px; top:520px; width:900px;">The @font-face points at a file that isn’t here, so it falls back — flag it and let me upload the real one.</div>
+  </div>
+</body>
+</html>

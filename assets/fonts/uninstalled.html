@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uninstalled family (no @font-face)</title>
+<style>
+  /* The custom/handwritten case: the design asks for a family that has NO
+     @font-face and isn't installed on this machine, so it silently falls back.
+     document.fonts.check() returns true here (the gotcha) — detection measures. */
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #101317; }
+  body { display: flex; justify-content: center; padding: 40px; }
+  .hs-page { position: relative; overflow: hidden; width: 1080px; height: 1350px; background: #101317; color: #f4f6fb; }
+  .hs-el { position: absolute; }
+  .kicker { font-family: system-ui, sans-serif; font-size: 30px; letter-spacing: 0.16em; text-transform: uppercase; color: #7d8798; }
+  .headline { font-family: "Sofia Signature Script", cursive; font-size: 150px; line-height: 1.0; color: #ffd43b; }
+  .body { font-family: system-ui, sans-serif; font-size: 34px; line-height: 1.4; color: #c3cad6; }
+</style>
+</head>
+<body>
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el kicker" style="left:80px; top:110px; width:900px;">Studio notes</div>
+    <div class="hs-el headline" style="left:80px; top:200px; width:940px;">Made by hand.</div>
+    <div class="hs-el body" style="left:80px; top:520px; width:900px;">The headline wants a handwritten face that isn’t on this machine — it should be flagged, not silently swapped.</div>
+  </div>
+</body>
+</html>

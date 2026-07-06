@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Legacy asset (free-form)</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Deliberately NOT contract-conforming: normal flow + flexbox, no .hs-page /
+     .hs-el, no absolute positioning. This is the fixture the import/freeze flow
+     converts into contract form. Style: bold print poster, one blue accent. */
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Archivo', sans-serif;
+    background: #dedcd4;
+    color: #111111;
+  }
+  .sheet {
+    width: 1080px;
+    min-height: 1350px;
+    margin: 40px auto;
+    padding: 64px 72px;
+    display: flex;
+    flex-direction: column;
+    background: #f4f4f0;
+    border: 2px solid #111111;
+  }
+  h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 152px;
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    margin: 24px 0 36px;
+  }
+  h1 .blue { color: #2b5bff; }
+  .when {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.35;
+    max-width: 800px;
+    margin-bottom: 56px;
+  }
+  .when .blue { color: #2b5bff; }
+  .spec {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: #111111;
+    border: 2px solid #111111;
+  }
+  .spec > div {
+    background: #f4f4f0;
+    padding: 30px 32px;
+  }
+  .spec h2 { font-size: 30px; font-weight: 600; margin-bottom: 8px; }
+  .spec p { font-size: 26px; line-height: 1.4; color: #444; }
+  /* A rotated block: freeze must measure its UNTRANSFORMED box (offset*), not
+     getBoundingClientRect, or the rotation gets applied twice. */
+  .stamp {
+    align-self: flex-end;
+    transform: rotate(-7deg);
+    margin: 56px 40px 0 0;
+    border: 4px solid #2b5bff;
+    color: #2b5bff;
+    padding: 14px 30px;
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stripes {
+    margin-top: auto;
+    height: 44px;
+    background: repeating-linear-gradient(-45deg, #111111 0 22px, #f4f4f0 22px 44px);
+    border: 2px solid #111111;
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <h1>Winter<br><span class="blue">market.</span></h1>
+    <div class="when">Saturday, December 13, on the town square.
+      From nine in the morning <span class="blue">until the light goes</span>.</div>
+    <div class="spec">
+      <div><h2>Forty makers</h2><p>Bread, wool, cider, clay, and one very good cheese van.</p></div>
+      <div><h2>Free entry</h2><p>Dogs welcome, on leads. Kids run free.</p></div>
+      <div><h2>Held outdoors</h2><p>Dress for the weather. Mulled things available.</p></div>
+      <div><h2>Bring a bag</h2><p>Stall map at the gate. Card and cash both fine.</p></div>
+    </div>
+    <div class="stamp">Rain or shine</div>
+    <div class="stripes"></div>
+  </div>
+</body>
+</html>

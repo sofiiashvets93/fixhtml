@@ -1,0 +1,22 @@
+{
+  "//": "Curated open-licensed font library (SIL OFL / Apache). `npm run fonts` syncs the latin WOFF2s + LICENSE of each into fonts/library/<slug>/ from its Fontsource devDependency. Anchored on the frontend-slides preset fonts so presets work out of the box.",
+  "library": {
+    "Archivo Black": "@fontsource/archivo-black",
+    "Space Grotesk": "@fontsource/space-grotesk",
+    "Space Mono": "@fontsource/space-mono",
+    "Manrope": "@fontsource/manrope",
+    "Inter": "@fontsource/inter",
+    "DM Sans": "@fontsource/dm-sans",
+    "Plus Jakarta Sans": "@fontsource/plus-jakarta-sans",
+    "Outfit": "@fontsource/outfit",
+    "Syne": "@fontsource/syne",
+    "Bricolage Grotesque": "@fontsource/bricolage-grotesque",
+    "Fraunces": "@fontsource/fraunces",
+    "Playfair Display": "@fontsource/playfair-display",
+    "Lora": "@fontsource/lora",
+    "EB Garamond": "@fontsource/eb-garamond",
+    "JetBrains Mono": "@fontsource/jetbrains-mono",
+    "Caveat": "@fontsource/caveat",
+    "Shantell Sans": "@fontsource/shantell-sans"
+  }
+}

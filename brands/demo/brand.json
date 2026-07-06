@@ -1,0 +1,35 @@
+{
+  "name": "demo",
+  "source": "frontend-slides preset: Bold Signal",
+  "color": {
+    "bg": "#1a1a1a",
+    "surface": "#2d2d2d",
+    "accent": "#ff5722",
+    "accentText": "#1a1a1a",
+    "text": "#ffffff",
+    "textMuted": "#9ca3af"
+  },
+  "typography": {
+    "display": { "family": "Archivo Black", "weight": 400 },
+    "body": { "family": "Space Grotesk", "weights": [400, 500] },
+    "hand": { "family": "Gloria Hallelujah", "weight": 400 }
+  },
+  "spacing": { "unit": 8, "scale": [1, 2, 3, 5, 8, 13] },
+  "shape": { "radius": { "sm": 8, "lg": 24 } },
+  "elevation": { "card": "0 8px 32px rgba(0,0,0,.35)" },
+  "style": {
+    "mood": "confident, bold, high-contrast",
+    "composition": "big type, one accent, generous negative space",
+    "voice": "direct, plainspoken, no hype",
+    "do": [
+      "one accent colour per artboard, used deliberately",
+      "oversized display type as the focal point",
+      "large section numbers (01, 02) for wayfinding"
+    ],
+    "dont": [
+      "hard-code hex or px values — reference tokens only",
+      "hot-link Google Fonts (breaks export fidelity)",
+      "more than one accent colour competing for attention"
+    ]
+  }
+}

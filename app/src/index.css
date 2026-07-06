@@ -1,0 +1,519 @@
+:root {
+  /* FixHTML identity (matches landing/index.html): design-tool canvas, one accent */
+  --bg: #e9eaed;
+  --panel: #fdfdfc;
+  --border: #d8dae0;
+  --text: #191b20;
+  --text-muted: #5f6470;
+  --accent: #2b5bff;
+  --accent-hover: #1f4ae0;
+  --danger: #c4372b;
+  --display: 'Bricolage Grotesque', sans-serif;
+  --mono: 'Spline Sans Mono', monospace;
+  font-family: 'Schibsted Grotesk', -apple-system, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100%;
+}
+
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.sidebar h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+
+.sidebar h1 .tld {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.sidebar .tagline {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.sidebar .section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+.asset-list { list-style: none; margin: 0; padding: 0; }
+
+.asset-list button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.asset-list button:hover { background: rgba(25, 27, 32, 0.05); }
+
+.asset-list button.active {
+  background: rgba(43, 91, 255, 0.08);
+  border-color: var(--accent);
+}
+
+.stage {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  /* top clears the fixed toolbar so wide artboards never start underneath it */
+  padding: 76px 40px 40px;
+  background: var(--bg);
+}
+
+.stage .empty {
+  color: var(--text-muted);
+  margin-top: 80px;
+  font-size: 14px;
+}
+
+.viewport {
+  transform-origin: top center;
+  box-shadow: 0 1px 2px rgba(20, 22, 30, 0.07), 0 8px 28px rgba(20, 22, 30, 0.08);
+  border-radius: 2px;
+}
+
+.viewport iframe {
+  border: 0;
+  display: block;
+  background: transparent;
+}
+
+.toolbar {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  box-shadow: 0 2px 10px rgba(20, 22, 30, 0.08);
+  font-variant-numeric: tabular-nums;
+}
+
+.toolbar button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.toolbar button:hover:not(:disabled) { border-color: var(--text); }
+
+.toolbar button.save {
+  width: auto;
+  padding: 0 12px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.toolbar button.save:hover:not(:disabled) { background: var(--accent-hover); }
+
+.toolbar button.save:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.readout {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.7;
+}
+
+.readout.muted { font-family: inherit; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+.error { color: var(--danger); font-size: 12px; margin-top: 16px; }
+
+.toolbar .sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+.toolbar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pagebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pagebar button {
+  width: 32px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pagebar button:hover {
+  border-color: var(--accent);
+}
+
+.pagebar button.on {
+  background: rgba(43, 91, 255, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagebar button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.export-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+.export-list li {
+  padding: 2px 0;
+}
+
+.export-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.export-list a:hover {
+  text-decoration: underline;
+}
+
+.export-list .muted {
+  color: var(--text-muted);
+}
+
+.freeze-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.freeze-btn:hover:not(:disabled) { background: var(--accent-hover); }
+
+.freeze-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.import-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.import-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(43, 91, 255, 0.08);
+  border: 3px dashed var(--accent);
+  color: var(--accent);
+  font-size: 22px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.drop-hint {
+  color: var(--text-muted);
+  font-size: 15px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 40px 48px;
+  background: var(--panel);
+}
+
+.stylepanel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stylepanel label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.stylepanel select {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.stylepanel .nudge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.stylepanel .nudge button {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.stylepanel .nudge button:hover { border-color: var(--accent); }
+.stylepanel .swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stylepanel .sw {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(25, 27, 32, 0.15);
+  cursor: pointer;
+  padding: 0;
+}
+.stylepanel .sw:hover { border-color: var(--text); }
+.stylepanel input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.accent-btn {
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+.accent-btn:hover { background: rgba(43, 91, 255, 0.08); }
+
+.gate {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+  background: var(--panel);
+}
+.gate h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 26px;
+  margin-bottom: 18px;
+}
+.gate h1 .tld {
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 2px 9px;
+  margin-left: 6px;
+  vertical-align: 3px;
+}
+.gate p {
+  max-width: 34ch;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.gate p strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.banner {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: 0 8px 30px rgba(20, 22, 30, 0.18);
+}
+
+.banner.warn {
+  border-color: #b45309;
+}
+
+.banner button {
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.banner button:last-child {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* Imported-font fidelity banner (M18) */
+.font-banner {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: min(680px, 90vw);
+  background: var(--panel);
+  border: 1px solid #b45309;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  box-shadow: 0 8px 30px rgba(20, 22, 30, 0.18);
+}
+.font-banner .fb-head {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.font-banner ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.font-banner li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.font-banner .fb-fam {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+}
+.font-banner .fb-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.font-banner .fb-busy {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.font-banner .fb-btn {
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.font-banner .fb-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 500;
+}
+.font-banner .fb-btn:hover { filter: brightness(1.05); }

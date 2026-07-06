@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample post</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Premium dark system: nested bezels, hairlines, grain, one blue accent. */
+  :root {
+    --bg: #16181d;
+    --surface: #21242b;
+    --accent: #2b5bff;
+    --text: #f2f4f8;
+    --text-muted: #9aa1ad;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #0d0e11; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    display: flex; flex-direction: column; gap: 40px;
+    padding: 40px; align-items: center;
+  }
+
+  /* Asset Contract base rule */
+  .hs-page {
+    position: relative;
+    width: 1080px; height: 1350px;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+    flex: 0 0 auto;
+  }
+  /* soft accent orb + film grain: page decor, not editable objects */
+  .hs-page::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(52% 38% at 82% 6%, rgba(43, 91, 255, 0.22), transparent 70%);
+  }
+  .hs-page::after {
+    content: ""; position: absolute; inset: 0; opacity: 0.05; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+
+  .hs-el { position: absolute; }
+
+  /* double-bezel: outer shell + inner core with concentric radii */
+  .shell {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 24px;
+    padding: 10px;
+  }
+  .core {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+    padding: 54px 58px;
+  }
+
+  .display {
+    font-weight: 700;
+    font-size: 112px; line-height: 1.02; letter-spacing: -0.02em;
+  }
+  .display .hs-accent { color: var(--accent); }
+  .lede { font-size: 37px; line-height: 1.5; color: var(--text-muted); }
+  .lede strong { color: var(--text); font-weight: 500; }
+
+  /* button-in-button: pill CTA with nested icon island */
+  .cta {
+    display: inline-flex; align-items: center; gap: 22px;
+    background: var(--accent); color: #ffffff;
+    border-radius: 999px; padding: 16px 18px 16px 40px;
+    font-size: 31px; font-weight: 500;
+  }
+  .cta .isl {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+  }
+
+  .byline { display: flex; align-items: center; gap: 20px; }
+  .byline .dot {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--accent); color: #ffffff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 34px;
+  }
+  .byline .who { font-size: 28px; font-weight: 500; }
+  .byline .role { font-size: 24px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el display" style="left:80px; top:170px; width:920px;">
+      Long run. <span class="hs-accent">Short</span> excuses.
+    </div>
+
+    <div class="hs-el shell" style="left:80px; top:620px; width:920px;">
+      <div class="core">
+        <div class="lede">
+          Sundays at seven, ten kilometers along the river, flat the whole way,
+          <strong>coffee after</strong>. Every pace welcome, nobody left behind,
+          nobody asked about splits.
+        </div>
+      </div>
+    </div>
+
+    <div class="hs-el byline" style="left:84px; top:1160px;">
+      <div class="dot">NL</div>
+      <div>
+        <div class="who">North Loop Run Club</div>
+        <div class="role">meets at the old bridge</div>
+      </div>
+    </div>
+
+    <div class="hs-el cta" style="left:640px; top:1168px;">
+      Join this week
+      <span class="isl">&#8599;</span>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "//": "Custom font example (stands in for Sofiia's handwritten font). A user drops a folder like this into fonts/custom/; the sync indexes it identically to library fonts. Gloria Hallelujah is SIL OFL — see LICENSE.",
+  "family": "Gloria Hallelujah",
+  "faces": [
+    { "weight": 400, "style": "normal", "file": "gloria-hallelujah-latin-400-normal.woff2" }
+  ]
+}

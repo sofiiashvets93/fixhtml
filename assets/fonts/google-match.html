@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Name-match candidate (a real Google family, un-linked)</title>
+<style>
+  /* Uses Pacifico — a real Google Fonts family — but the @font-face/link got lost.
+     "Find on Google Fonts" should match it by name and load it on demand. */
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #fff5f0; }
+  body { display: flex; justify-content: center; padding: 40px; }
+  .hs-page { position: relative; overflow: hidden; width: 1080px; height: 1350px; background: #fff5f0; color: #21150f; }
+  .hs-el { position: absolute; }
+  .headline { font-family: "Pacifico", cursive; font-size: 140px; line-height: 1.05; color: #e0533d; }
+  .body { font-family: system-ui, sans-serif; font-size: 34px; line-height: 1.4; color: #6b5546; }
+</style>
+</head>
+<body>
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el headline" style="left:80px; top:220px; width:940px;">Fetch me by name.</div>
+    <div class="hs-el body" style="left:80px; top:560px; width:900px;">Pacifico is on Google Fonts, so name-matching should recover it without any upload.</div>
+  </div>
+</body>
+</html>

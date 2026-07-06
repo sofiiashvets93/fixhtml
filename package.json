@@ -1,0 +1,77 @@
+{
+  "name": "fixhtml-app",
+  "version": "0.1.0",
+  "description": "Drop your AI-generated HTML → edit it like Canva (drag, resize, rotate, rewrite) → save back into the file or export a PNG.",
+  "type": "module",
+  "bin": {
+    "fixhtml": "bin/fixhtml.mjs"
+  },
+  "files": [
+    "dist",
+    "server",
+    "bin",
+    "skills"
+  ],
+  "keywords": [
+    "html",
+    "editor",
+    "canva",
+    "slides",
+    "export",
+    "ai",
+    "claude"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "node server/index.mjs",
+    "dev:web": "vite",
+    "fonts": "node scripts/sync-fonts.mjs && node scripts/build-brand.mjs",
+    "build:brand": "node scripts/build-brand.mjs",
+    "build": "tsc -b && vite build",
+    "build:demo": "tsc -b && VITE_ADAPTER=browser vite build --outDir ../dist-demo",
+    "build:site": "node scripts/build-site.mjs",
+    "preview:demo": "vite preview --outDir ../dist-demo --port 4180",
+    "preview": "vite preview",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "node-html-parser": "^6.1.13"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@fontsource/archivo-black": "^5.2.8",
+    "@fontsource/bricolage-grotesque": "^5.2.10",
+    "@fontsource/caveat": "^5.2.8",
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/eb-garamond": "^5.2.7",
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/lora": "^5.2.8",
+    "@fontsource/manrope": "^5.2.8",
+    "@fontsource/outfit": "^5.2.8",
+    "@fontsource/playfair-display": "^5.2.8",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
+    "@fontsource/shantell-sans": "^5.2.7",
+    "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/space-mono": "^5.2.9",
+    "@fontsource/syne": "^5.2.7",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@zumer/snapdom": "^1.9.11",
+    "concurrently": "^9.1.0",
+    "moveable": "^0.53.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}

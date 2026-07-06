@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Petal and Stem mark">
+  <g stroke="#2f3437" stroke-width="4" fill="#e9efff">
+    <circle cx="60" cy="38" r="16"/>
+    <circle cx="82" cy="54" r="16"/>
+    <circle cx="74" cy="80" r="16"/>
+    <circle cx="46" cy="80" r="16"/>
+    <circle cx="38" cy="54" r="16"/>
+  </g>
+  <circle cx="60" cy="61" r="13" fill="#2b5bff" stroke="#2f3437" stroke-width="4"/>
+</svg>

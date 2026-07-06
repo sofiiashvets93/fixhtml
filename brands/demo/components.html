@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>demo — components</title>
+<!-- Hand-authored in v1 (compiled later). Visual sheet of approved patterns +
+     few-shot context for the generating model. Every value is a brand token. -->
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background: var(--brand-bg); color: var(--brand-text);
+    font-family: var(--brand-font-body);
+    padding: var(--brand-space-5); display: grid; gap: var(--brand-space-4);
+    grid-template-columns: repeat(2, 1fr); max-width: 1200px; margin: 0 auto;
+  }
+  .swatches { grid-column: 1 / -1; display: flex; gap: var(--brand-space-2); }
+  .swatch { width: 96px; height: 96px; border-radius: var(--brand-radius-sm); }
+  .label { font-size: 22px; color: var(--brand-text-muted); margin-bottom: var(--brand-space-1); }
+
+  .headline {
+    font-family: var(--brand-font-display); font-weight: var(--brand-weight-display);
+    font-size: 72px; line-height: 1;
+  }
+  .headline em { font-style: normal; color: var(--brand-accent); }
+
+  .stat { background: var(--brand-surface); border-radius: var(--brand-radius-lg); padding: var(--brand-space-4); }
+  .stat .num { font-family: var(--brand-font-display); font-weight: var(--brand-weight-display); font-size: 88px; color: var(--brand-accent); }
+  .stat .cap { font-size: 26px; color: var(--brand-text-muted); }
+
+  .chip {
+    display: inline-block; background: var(--brand-accent); color: var(--brand-accent-text);
+    font-weight: 500; font-size: 28px; padding: var(--brand-space-2) var(--brand-space-3);
+    border-radius: var(--brand-radius-sm);
+  }
+  .card {
+    background: var(--brand-accent); color: var(--brand-accent-text);
+    border-radius: var(--brand-radius-lg); padding: var(--brand-space-4);
+    box-shadow: var(--brand-elevation-card);
+  }
+  .card .t { font-family: var(--brand-font-display); font-weight: var(--brand-weight-display); font-size: 48px; }
+</style>
+</head>
+<body>
+  <div class="swatches">
+    <div><div class="label">bg</div><div class="swatch" style="background:var(--brand-bg);border:1px solid var(--brand-surface)"></div></div>
+    <div><div class="label">surface</div><div class="swatch" style="background:var(--brand-surface)"></div></div>
+    <div><div class="label">accent</div><div class="swatch" style="background:var(--brand-accent)"></div></div>
+    <div><div class="label">text</div><div class="swatch" style="background:var(--brand-text)"></div></div>
+    <div><div class="label">muted</div><div class="swatch" style="background:var(--brand-text-muted)"></div></div>
+  </div>
+
+  <div>
+    <div class="label">Headline block</div>
+    <div class="headline">Ship it <em>bold</em>.</div>
+  </div>
+  <div>
+    <div class="label">Accent card</div>
+    <div class="card"><div class="t">One accent, used well.</div></div>
+  </div>
+  <div>
+    <div class="label">Stat card</div>
+    <div class="stat"><div class="num">100%</div><div class="cap">on-brand, every time</div></div>
+  </div>
+  <div>
+    <div class="label">CTA chip</div>
+    <div class="chip">Swipe →</div>
+  </div>
+</body>
+</html>

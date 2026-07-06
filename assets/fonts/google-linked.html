@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Google-Fonts-linked (must NOT be flagged)</title>
+<!-- Absolute Google-Fonts link: loads in the iframe (and snapdom embeds it in
+     export). Detection must NOT flag Fraunces — no false positives. -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #fbf7f0; }
+  body { display: flex; justify-content: center; padding: 40px; }
+  .hs-page { position: relative; overflow: hidden; width: 1080px; height: 1350px; background: #fbf7f0; color: #241c14; }
+  .hs-el { position: absolute; }
+  .headline { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 132px; line-height: 1.02; }
+  .body { font-family: "Fraunces", Georgia, serif; font-weight: 400; font-size: 36px; line-height: 1.45; color: #5a4d3f; }
+</style>
+</head>
+<body>
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el headline" style="left:80px; top:180px; width:920px;">Real Fraunces, over the wire.</div>
+    <div class="hs-el body" style="left:80px; top:560px; width:900px;">This file links Google Fonts, so the family loads and renders — the banner must stay away.</div>
+  </div>
+</body>
+</html>

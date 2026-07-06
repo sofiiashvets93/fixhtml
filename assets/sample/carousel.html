@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample carousel</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Editorial system: warm paper, serif display, one blue accent. */
+  :root {
+    --paper: #f7f6f3;
+    --card: #ffffff;
+    --ink: #2f3437;
+    --muted: #787774;
+    --line: #eaeaea;
+    --accent: #2b5bff;
+    --serif: 'Newsreader', Georgia, serif;
+    --sans: 'Schibsted Grotesk', -apple-system, sans-serif;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { background: #ece9e2; }
+  body {
+    font-family: var(--sans);
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 40px;
+    align-items: center;
+  }
+
+  /* Asset Contract: each page is a fixed-size artboard */
+  .hs-page {
+    position: relative;
+    width: 1080px;
+    height: 1350px;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 2px 10px rgba(40, 36, 30, 0.08);
+    flex: 0 0 auto;
+  }
+
+  /* Asset Contract base rule: direct children are absolutely-positioned objects */
+  .hs-el { position: absolute; }
+
+  .headline {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 128px; line-height: 1.06; letter-spacing: -0.02em;
+  }
+  .headline em { font-style: italic; color: var(--accent); }
+  .subtext { font-size: 38px; line-height: 1.55; color: var(--muted); }
+  .next {
+    display: inline-block; background: var(--accent); color: #ffffff;
+    border-radius: 10px; padding: 22px 44px;
+    font-size: 31px; font-weight: 600;
+  }
+  .logo { width: 96px; height: 96px; display: block; }
+
+  .stem {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 38px 44px;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .stem h3 { font-family: var(--serif); font-size: 46px; font-weight: 500; }
+  .stem .price { font-size: 32px; font-weight: 600; color: var(--accent); }
+  .stem p { font-size: 27px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+  <!-- Page 1 -->
+  <div class="hs-page" data-size="1080x1350">
+    <!-- local image: absolute path so it resolves in the served site, the app's
+         srcdoc import (base /app/), and the local studio alike -->
+    <div class="hs-el" style="left:80px; top:100px;">
+      <img class="logo" src="/assets/sample/images/logo.svg" alt="Flower mark">
+    </div>
+    <!-- nested inline markup: <em> and <strong> must survive edits/save -->
+    <div class="hs-el headline" style="left:80px; top:300px; width:920px;">
+      Tulips, before <em>everyone</em> else has <strong>them</strong>.
+    </div>
+    <div class="hs-el subtext" style="left:80px; top:830px; width:800px;">
+      Twelve stems, wrapped in paper, gone by noon most Saturdays.
+    </div>
+    <div class="hs-el next" style="left:80px; top:1090px;">See the bunch</div>
+  </div>
+
+  <!-- Page 2 -->
+  <div class="hs-page" data-size="1080x1350">
+    <div class="hs-el headline" style="left:80px; top:96px; width:900px; font-size:92px;">
+      This week&rsquo;s <em>list</em>
+    </div>
+
+    <div class="hs-el stem" style="left:80px; top:300px; width:920px;">
+      <div><h3>Tulips</h3><p>Twelve stems, any color the van brought.</p></div>
+      <span class="price">14</span>
+    </div>
+    <div class="hs-el stem" style="left:80px; top:490px; width:920px;">
+      <div><h3>Ranunculus</h3><p>Small, ruffled, better than roses.</p></div>
+      <span class="price">18</span>
+    </div>
+    <div class="hs-el stem" style="left:80px; top:680px; width:920px;">
+      <div><h3>Sweet peas</h3><p>Smell them before you buy. You will buy.</p></div>
+      <span class="price">12</span>
+    </div>
+    <!-- pre-rotated element WITH scale: rotating it must preserve the scale() -->
+    <div class="hs-el stem" style="left:80px; top:870px; width:920px; transform: rotate(-2deg) scale(1.02);">
+      <div><h3>Eucalyptus</h3><p>For people who forget to water things.</p></div>
+      <span class="price">9</span>
+    </div>
+
+    <div class="hs-el next" style="left:80px; top:1110px;">Order for pickup</div>
+  </div>
+
+</body>
+</html>
