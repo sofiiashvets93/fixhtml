@@ -1,3 +1,14 @@
+<div align="center">
+
+[![FixHTML — edit AI-generated HTML like Canva, keep the HTML](docs/readme-banner.png)](https://fixhtml.app)
+
+[![npm](https://img.shields.io/npm/v/fixhtml-app?color=2b5bff&label=npm)](https://www.npmjs.com/package/fixhtml-app)
+[![license: MIT](https://img.shields.io/badge/license-MIT-black.svg)](./LICENSE)
+[![try it](https://img.shields.io/badge/try_it-fixhtml.app-2b5bff)](https://fixhtml.app)
+[![agent skills](https://img.shields.io/badge/agent_skills-Claude_Code_%C2%B7_Codex-555)](./skills/fixhtml)
+
+</div>
+
 # FixHTML
 
 **Edit AI-generated HTML like Canva — then keep the HTML.** Drop a slide, carousel, or
