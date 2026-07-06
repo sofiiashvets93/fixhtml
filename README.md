@@ -112,8 +112,7 @@ and the engineering decisions behind each of these.
 npm install
 npm run dev          # local studio: editor http://localhost:5173, server :5174
 npm run build        # prebuilt frontend -> dist/ (what the CLI serves)
-npm run build:demo   # browser-only demo build -> dist-demo/
-npm run build:site   # landing + demo composed -> dist-site/ (what fixhtml.app serves)
+npm run build:demo   # browser-only demo build -> dist-demo/ (what fixhtml.app serves)
 npm run fonts        # sync the self-hosted font library (local studio)
 ```
 
