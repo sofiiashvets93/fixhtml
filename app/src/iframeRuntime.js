@@ -359,10 +359,27 @@
   // --- freeze: the flow-element lift, run in the editor iframe so the
   // browser demo needs no server/Playwright. This is the SINGLE copy of the lift
   // (the old server freeze path was removed once both adapters use this). Converts
-  // a free-form page to contract form and returns the contract HTML. -----------
+  // a free-form page to contract form and returns the contract HTML. A slide deck
+  // (stacked same-class siblings where only the current slide is shown, driven by
+  // a navigation script the edit view strips) becomes one hs-page PER SLIDE;
+  // anything else becomes a single page. --------------------------------------
   function freeze() {
     return document.fonts.ready.then(function () {
-      document.getAnimations().forEach(function (a) { a.finish(); });
+      // finish() throws on infinite animations — skip those, they have no end state.
+      var finishAnims = function () {
+        document.getAnimations().forEach(function (a) { try { a.finish(); } catch (e) { /* infinite */ } });
+      };
+      finishAnims();
+      // Count-up counters (data-count / data-target with a bare-number text) that
+      // the stripped controller script would have animated: bake the target in.
+      Array.prototype.forEach.call(document.querySelectorAll('[data-count],[data-target]'), function (el) {
+        if (el.children.length) return;
+        var t = parseFloat(el.getAttribute('data-count') || el.getAttribute('data-target'));
+        var raw = (el.textContent || '').replace(/[,\s]/g, '');
+        var cur = parseFloat(raw);
+        if (!isFinite(t) || !isFinite(cur) || cur === t || String(cur) !== raw) return;
+        el.textContent = t.toLocaleString('en-US');
+      });
       var skip = function (n) { return n.tagName === 'SCRIPT' || n.tagName === 'STYLE'; };
       var kids = function (el) { return Array.prototype.filter.call(el.children, function (n) { return !skip(n); }); };
       // An element worth keeping as its own box (a card/panel), vs a bare layout
@@ -376,55 +393,200 @@
         if ((parseFloat(s.paddingTop) || 0) + (parseFloat(s.paddingRight) || 0) + (parseFloat(s.paddingBottom) || 0) + (parseFloat(s.paddingLeft) || 0) > 0) return true;
         return false;
       };
+      var shown = function (el) {
+        var s = getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden' || (parseFloat(s.opacity) || 0) < 0.05) return false;
+        var r = el.getBoundingClientRect();
+        return r.width > 1 && r.height > 1;
+      };
 
-      var top = kids(document.body);
-      var page = top.length === 1 ? top[0] : document.body;
-      var blocks = page === document.body ? top : kids(page);
-      // Descend through single-wrapper layers so a one-container design still yields
-      // individually draggable blocks. A styled single child (a card/panel) becomes
-      // the artboard so its box is preserved; a bare wrapper is passed through and
-      // pruned below. Capped so we never shatter a deeply-nested component; a level
-      // with multiple siblings (a grid, etc.) stops the descent.
-      for (var depth = 0; blocks.length === 1 && depth < 4; depth++) {
-        var single = blocks[0];
-        var inner = kids(single);
-        if (inner.length === 0) break; // leaf — nothing to descend into
-        if (styled(single)) page = single;
-        blocks = inner;
+      // Deck detection: walk down through wrapper layers looking for >=2 siblings
+      // sharing tag+class where at least one is shown at panel scale and at least
+      // one is hidden — slides waiting for a navigation script we stripped.
+      function findSlides() {
+        var node = document.body;
+        for (var depth = 0; node && depth < 6; depth++) {
+          var ch = kids(node);
+          var groups = {};
+          ch.forEach(function (el) {
+            Array.prototype.forEach.call(el.classList, function (t) {
+              var k = el.tagName + '.' + t;
+              (groups[k] = groups[k] || []).push(el);
+            });
+          });
+          var best = null;
+          Object.keys(groups).forEach(function (k) {
+            var g = groups[k];
+            if (g.length < 2 || (best && g.length <= best.length)) return;
+            var vis = g.filter(shown);
+            if (vis.length === 0 || vis.length === g.length) return;
+            var r = vis[0].getBoundingClientRect();
+            if (r.width < 320 || r.height < 240) return; // slides are panel-scale
+            best = g;
+          });
+          if (best) return best;
+          // No group here — descend into the largest child (the wrapper/stage).
+          var next = null, area = 0;
+          ch.forEach(function (c) {
+            var r = c.getBoundingClientRect(), a = r.width * r.height;
+            if (a > area) { area = a; next = c; }
+          });
+          node = next;
+        }
+        return null;
       }
 
-      page.style.position = 'relative';
-      var pageW = page.offsetWidth, pageH = page.offsetHeight;
-      var cs = getComputedStyle(page);
-      var bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
+      // The deck's controller marked the current slide with a state class
+      // (.active/.visible/…). Recover that "on" state for every slide: any class
+      // that alone flips a hidden slide to shown is a state class. Tested one at a
+      // time on a hidden probe so identity classes (.cover, .closing) never leak.
+      function stateClasses(slides) {
+        var probe = null;
+        for (var i = 0; i < slides.length; i++) { if (!shown(slides[i])) { probe = slides[i]; break; } }
+        if (!probe) return [];
+        var cand = {};
+        slides.forEach(function (s) {
+          Array.prototype.forEach.call(s.classList, function (t) { cand[t] = 1; });
+        });
+        // Classes a controller adds only at runtime never appear in the static
+        // markup — probe the common names too.
+        ['active', 'visible', 'current', 'show', 'shown', 'on'].forEach(function (t) { cand[t] = 1; });
+        var found = [];
+        Object.keys(cand).forEach(function (t) {
+          if (probe.classList.contains(t)) return;
+          probe.classList.add(t);
+          if (shown(probe)) found.push(t);
+          probe.classList.remove(t);
+        });
+        return found;
+      }
 
-      // Measure untransformed boxes relative to the page's padding box BEFORE any
-      // reparenting (moving elements would change layout).
-      var saved = blocks.map(function (b) { return b.style.transform; });
-      blocks.forEach(function (b) { b.style.transform = 'none'; });
-      var pr = page.getBoundingClientRect();
-      var measured = blocks.map(function (b) {
-        var r = b.getBoundingClientRect();
-        return { el: b, x: r.left - pr.left - bl, y: r.top - pr.top - bt, w: r.width, h: r.height };
-      });
-      blocks.forEach(function (b, i) { b.style.transform = saved[i]; });
+      // Turn every slide "on", then re-plumb the deck for flow: slides become
+      // in-flow pages stacked vertically; the wrapper chain (fixed viewports,
+      // scaled stages) is neutralized so nothing clips, scales, or overlaps.
+      function prepareDeck(slides) {
+        var states = stateClasses(slides);
+        slides.forEach(function (s) {
+          states.forEach(function (t) { s.classList.add(t); });
+          if (getComputedStyle(s).display === 'none') s.style.display = 'block';
+          s.style.visibility = 'visible';
+          s.style.opacity = '1';
+          s.style.pointerEvents = 'auto';
+        });
+        finishAnims(); // the class flips may have started entrance transitions
+        // Elements still waiting for an entrance the controller would have run
+        // (opacity-0 with a transition/animation, e.g. .reveal): jump them to
+        // their shown state — frozen output has no scripts to reveal them later.
+        slides.forEach(function (s) {
+          Array.prototype.forEach.call(s.querySelectorAll('*'), function (el) {
+            var c = getComputedStyle(el);
+            var animated = /opacity|transform|all/.test(c.transitionProperty) || c.animationName !== 'none';
+            if (!animated) return;
+            if ((parseFloat(c.opacity) || 0) < 0.05 || c.visibility === 'hidden') {
+              el.style.opacity = '1';
+              el.style.visibility = 'visible';
+              el.style.transform = 'none';
+            }
+          });
+        });
+        // Layout size (offsetWidth ignores ancestor scale transforms), measured
+        // while the deck geometry is still intact.
+        var sizes = slides.map(function (s) { return { w: s.offsetWidth, h: s.offsetHeight }; });
+        // Deck chrome: siblings of the slides (page numbers, nav) and fixed
+        // overlays up the chain (buttons, hotzones) don't belong in frozen pages.
+        var container = slides[0].parentElement;
+        kids(container).forEach(function (c) { if (slides.indexOf(c) === -1) c.remove(); });
+        var anc = container;
+        while (anc && anc !== document.documentElement) {
+          if (anc.parentElement) {
+            kids(anc.parentElement).forEach(function (sib) {
+              if (sib !== anc && getComputedStyle(sib).position === 'fixed') sib.style.display = 'none';
+            });
+          }
+          anc.style.position = 'static';
+          anc.style.transform = 'none';
+          anc.style.overflow = 'visible';
+          anc.style.width = 'auto';
+          anc.style.height = 'auto';
+          anc.style.left = anc.style.top = anc.style.right = anc.style.bottom = 'auto';
+          anc = anc.parentElement;
+        }
+        slides.forEach(function (s, i) {
+          s.style.position = 'relative';
+          s.style.left = s.style.top = s.style.right = s.style.bottom = 'auto';
+          s.style.transform = 'none';
+          s.style.width = sizes[i].w + 'px';
+          s.style.height = sizes[i].h + 'px';
+          s.style.margin = '0';
+        });
+      }
 
-      // Reparent blocks to be DIRECT children of the page (contract shape — keeps
-      // z-order/reorder sibling logic correct), then drop the emptied wrapper chain
-      // we descended through. Appending each in order preserves their order.
-      var origChildren = kids(page);
-      blocks.forEach(function (b) { page.appendChild(b); });
-      origChildren.forEach(function (c) { if (blocks.indexOf(c) === -1) c.remove(); });
+      // The lift: pin pageEl's blocks in place as absolutely-positioned hs-els.
+      // For a deck, each slide IS the artboard (never re-rooted); free-form pages
+      // keep the original descend-and-re-root behavior.
+      function liftPage(pageEl, isSlide) {
+        var page = pageEl;
+        var blocks = kids(page);
+        // Descend through single-wrapper layers so a one-container design still
+        // yields individually draggable blocks. A styled single child (a card/
+        // panel) becomes the artboard so its box is preserved — except in a slide,
+        // where it stays whole as one block. A bare wrapper is passed through and
+        // pruned below. Capped so we never shatter a deeply-nested component; a
+        // level with multiple siblings (a grid, etc.) stops the descent.
+        for (var depth = 0; blocks.length === 1 && depth < 4; depth++) {
+          var single = blocks[0];
+          var inner = kids(single);
+          if (inner.length === 0) break; // leaf — nothing to descend into
+          if (styled(single)) {
+            if (isSlide) break; // keep the card whole; the slide stays the page
+            page = single;
+          }
+          blocks = inner;
+        }
 
-      var px = function (n) { return Math.round(n * 100) / 100 + 'px'; };
-      measured.forEach(function (m) {
-        m.el.classList.add('hs-el');
-        m.el.style.left = px(m.x); m.el.style.top = px(m.y);
-        m.el.style.width = px(m.w); m.el.style.height = px(m.h); m.el.style.margin = '0';
-      });
-      page.classList.add('hs-page');
-      page.setAttribute('data-size', pageW + 'x' + pageH);
-      page.style.width = pageW + 'px'; page.style.height = pageH + 'px';
+        page.style.position = 'relative';
+        var pageW = page.offsetWidth, pageH = page.offsetHeight;
+        var cs = getComputedStyle(page);
+        var bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
+
+        // Measure untransformed boxes relative to the page's padding box BEFORE any
+        // reparenting (moving elements would change layout).
+        var saved = blocks.map(function (b) { return b.style.transform; });
+        blocks.forEach(function (b) { b.style.transform = 'none'; });
+        var pr = page.getBoundingClientRect();
+        var measured = blocks.map(function (b) {
+          var r = b.getBoundingClientRect();
+          return { el: b, x: r.left - pr.left - bl, y: r.top - pr.top - bt, w: r.width, h: r.height };
+        });
+        blocks.forEach(function (b, i) { b.style.transform = saved[i]; });
+
+        // Reparent blocks to be DIRECT children of the page (contract shape — keeps
+        // z-order/reorder sibling logic correct), then drop the emptied wrapper chain
+        // we descended through. Appending each in order preserves their order.
+        var origChildren = kids(page);
+        blocks.forEach(function (b) { page.appendChild(b); });
+        origChildren.forEach(function (c) { if (blocks.indexOf(c) === -1) c.remove(); });
+
+        var px = function (n) { return Math.round(n * 100) / 100 + 'px'; };
+        measured.forEach(function (m) {
+          m.el.classList.add('hs-el');
+          m.el.style.left = px(m.x); m.el.style.top = px(m.y);
+          m.el.style.width = px(m.w); m.el.style.height = px(m.h); m.el.style.margin = '0';
+        });
+        page.classList.add('hs-page');
+        page.setAttribute('data-size', pageW + 'x' + pageH);
+        page.style.width = pageW + 'px'; page.style.height = pageH + 'px';
+      }
+
+      var slides = findSlides();
+      if (slides) {
+        prepareDeck(slides);
+        slides.forEach(function (s) { liftPage(s, true); });
+      } else {
+        var top = kids(document.body);
+        liftPage(top.length === 1 ? top[0] : document.body, false);
+      }
+
       var style = document.createElement('style');
       style.textContent = '.hs-page{position:relative;overflow:hidden}.hs-el{position:absolute;margin:0;box-sizing:border-box}';
       document.head.appendChild(style);

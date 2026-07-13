@@ -178,6 +178,28 @@ pass `dpr: 1` so `scale` is the sole multiplier (else retina doubles it to 4×),
   agent write during an open edit session triggers the Reload/Overwrite guard (the M5 mtime
   guard) rather than clobbering the human's visual edits.
 
+- **M19 — Deck-aware freeze (multi-slide presentations)** ✔ a presentation deck opened in the
+  editor used to yield only its first slide: the deck's navigation script is stripped by the
+  edit view, its CSS keeps every non-`.active` slide hidden, and the freeze lifted the one
+  visible layout into a single `hs-page`. Freeze now detects the deck shape — ≥2 siblings
+  sharing tag+class where one is shown at panel scale and the rest are hidden — and produces
+  **one `hs-page` per slide**. Recovery steps, all inside `iframeRuntime.js` `freeze()`:
+  (1) *state classes* — any class that alone flips a hidden probe slide to shown
+  (`.active`/`.visible`/…, tested one at a time so identity classes like `.cover` never leak)
+  is applied to every slide; (2) *entrance states* — elements still at opacity-0 with a
+  transition/animation (`.reveal` patterns) are jumped to their shown state, since the frozen
+  file has no script to reveal them; (3) *count-up counters* — `[data-count]`/`[data-target]`
+  elements holding a bare-number placeholder get the target value baked in; (4) *re-plumb* —
+  slides become in-flow pages stacked vertically, the wrapper chain (fixed viewports, scaled
+  stages) is neutralized, and deck chrome (nav siblings, fixed overlays) is dropped. Each
+  slide is then lifted with the existing flow-element lift, never re-rooted (a styled
+  single wrapper stays whole as one block so the slide keeps its own box). Design-intent
+  hiding survives: `!important` rules beat the inline unhide, so glyphs a deck hides on
+  purpose stay hidden. Acceptance (real UI end-to-end via Playwright): a 16-slide 1920×1080
+  AI deck opened with the CLI freezes to 16 `hs-page`s (page bar 1–16, all content visible,
+  counters showing real values), saves back to disk, and `export` writes 16 PNGs; a
+  free-form single-page asset still freezes to exactly one page.
+
 ## Design notes
 
 ### Stable ids across sessions (the M5 design note)

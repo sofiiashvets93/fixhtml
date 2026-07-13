@@ -1,6 +1,6 @@
 {
   "name": "fixhtml-app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Drop your AI-generated HTML → edit it like Canva (drag, resize, rotate, rewrite) → save back into the file or export a PNG.",
   "type": "module",
   "bin": {
