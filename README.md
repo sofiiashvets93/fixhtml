@@ -36,6 +36,9 @@ runs on your machine. Export uses Chromium; if it isn't installed the command te
 
 - **Direct manipulation** — drag, resize, 8-handle scale, rotate, with edge/center snapping
   and alignment guides. Multi-select with a marquee.
+- **Multi-slide imports** — recognized HTML decks become separate editable pages, shown
+  one slide at a time. Use previous/next or the numbered slide picker; edits stay in place
+  when you switch. Shared stage artwork, such as a ribbon or texture, stays on each slide.
 - **Text & structure** — double-click to edit text (nested `<em>`/`<strong>` preserved),
   z-order, duplicate, delete, full undo/redo.
 - **HTML stays the source of truth** — edits replay onto your original file; no lock-in, no
@@ -115,6 +118,16 @@ npm run build        # prebuilt frontend -> dist/ (what the CLI serves)
 npm run build:demo   # browser-only demo build -> dist-demo/ (what fixhtml.app serves)
 npm run fonts        # sync the self-hosted font library (local studio)
 ```
+
+For slide import regression checks, start `npm run dev` and open
+`http://localhost:5173/slide-regression.html`. The browser harness checks hidden and stacked
+slides, ordinary dashboard layouts, shared artwork, frozen HTML reloads, and switching
+slides without losing edits or hiding pages from export.
+
+For the hosted editor at `/app/`, build with `npm run build:demo -- --base=/app/` and publish
+the contents of `dist-demo/` under that path. Updating this repository alone does not update
+the hosted site. Re-import the original deck after updating; previously flattened imports
+retain their old page structure.
 
 ```
 app/                  React + Vite + TS editor frontend (both build targets)

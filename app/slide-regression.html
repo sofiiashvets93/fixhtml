@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Slide import regression</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; padding: 24px; }
+    li { margin: 8px 0; }
+    .pass { color: #08743c; }
+    .fail { color: #b42318; }
+    iframe { position: absolute; left: -10000px; top: 0; width: 1280px; height: 720px; border: 0; }
+  </style>
+</head>
+<body>
+  <h1>Slide import regression</h1>
+  <ol id="results"></ol>
+  <p id="summary">Running…</p>
+  <script type="module">
+    import runtime from './src/iframeRuntime.js?raw';
+    import { showEditorPage } from './src/pageNavigation.ts';
+
+    const slide = (label) => `<section class="slide"><h1>${label}</h1><p>Editable description</p></section>`;
+
+    const cases = [
+      {
+        name: 'visible stacked slides in flex/grid wrappers',
+        html: `<style>
+          html,body{height:100%;overflow:hidden}
+          body{display:flex;justify-content:center;margin:0}
+          .deck{display:grid;grid-template-columns:1fr;gap:30px;max-height:720px;overflow:hidden}
+          .slide{width:960px;height:540px;background:#e9eefc}
+        </style><div class="deck">${['one', 'two', 'three'].map(slide).join('')}</div>`,
+        count: 3,
+        labels: ['one', 'two', 'three'],
+      },
+      {
+        name: 'hidden slides in a fixed viewport',
+        html: `<style>
+          html,body{height:100%;overflow:hidden}
+          .deck{position:fixed;inset:0;width:1280px;height:720px;overflow:hidden}
+          .slide{display:none;position:absolute;inset:0;width:1280px;height:720px;background:#f4ede7}
+          .slide.active{display:block}
+        </style><div class="deck">${['cover', 'middle', 'end'].map((label, i) => slide(label).replace('class="slide"', `class="slide${i === 0 ? ' active' : ''}"`)).join('')}</div>`,
+        count: 3,
+        labels: ['cover', 'middle', 'end'],
+      },
+      {
+        name: 'all hidden slides with explicit slide markup',
+        html: `<style>.slide{display:none;width:960px;height:540px;background:#eee}</style>
+          <div>${['first', 'second'].map(slide).join('')}</div>`,
+        count: 2,
+        labels: ['first', 'second'],
+      },
+      {
+        name: 'dashboard cards stay one page',
+        html: `<style>main{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+          .card{width:550px;height:400px;background:#ddd}</style>
+          <main><section class="card">sales</section><section class="card">orders</section><section class="card">stock</section></main>`,
+        count: 1,
+      },
+      {
+        name: 'hidden dashboard tab stays one page',
+        html: `<style>.card{width:600px;height:400px;background:#ddd}.card.off{display:none}</style>
+          <main><section class="card">sales</section><section class="card off">orders</section></main>`,
+        count: 1,
+      },
+      {
+        name: 'multiple slides in a clipped horizontal flex track',
+        html: `<style>html,body{height:100%;overflow:hidden;margin:0}
+          .deck{position:fixed;inset:0;overflow:hidden}
+          .track{display:flex;width:15360px;transform:translateX(-1280px)}
+          .slide{flex:0 0 1280px;width:1280px;height:720px;background:#e9eefc}
+        </style><div class="deck"><div class="track">${Array.from({length:12}, (_, i) => slide(`Slide ${i + 1}`)).join('')}</div></div>`,
+        count: 12,
+        labels: Array.from({length:12}, (_, i) => `Slide ${i + 1}`),
+        presentation: { w: 1280, h: 720 },
+      },
+      {
+        name: 'shared underlay and overlay survive every slide; controls do not',
+        html: `<style>
+          .stage{position:relative;width:960px;height:540px;background:#fff}
+          .slide{position:absolute;inset:0;width:960px;height:540px;visibility:hidden;opacity:0}
+          .slide.active{visibility:visible;opacity:1}
+          .art-under{position:absolute;inset:0;background:#eee;pointer-events:none;opacity:.4;z-index:0}
+          .art-over{position:absolute;left:30px;top:24px;width:60px;height:60px;background:#557799;pointer-events:none;z-index:30}
+          .progress{position:absolute;bottom:0;width:960px;height:3px;background:#333;pointer-events:none}
+        </style><main class="stage">
+          <div class="art-under"></div>
+          ${['one', 'two', 'three'].map((label, i) => slide(label).replace('class="slide"', `class="slide${i === 0 ? ' active' : ''}"`)).join('')}
+          <div class="art-over"></div><div class="progress" aria-hidden="true"></div>
+          <button style="position:absolute;bottom:0">Next</button>
+        </main>`,
+        count: 3,
+        labels: ['one', 'two', 'three'],
+        sharedArt: [
+          {selector: '.art-under', x: 0, y: 0, w: 960, h: 540, opacity: 0.4, z: '0'},
+          {selector: '.art-over', x: 30, y: 24, w: 60, h: 60, opacity: 1, z: '30'},
+        ],
+        noChrome: ['.progress', 'button'],
+      },
+    ];
+
+    const output = document.querySelector('#results');
+    let passed = 0;
+    for (const item of cases) {
+      const row = document.createElement('li');
+      row.textContent = item.name;
+      output.appendChild(row);
+      const frame = document.createElement('iframe');
+      document.body.appendChild(frame);
+      try {
+        if (item.error) throw item.error;
+        await new Promise((resolve) => { frame.onload = resolve; frame.srcdoc = item.html; });
+        frame.contentWindow.Moveable = function () {};
+        const script = frame.contentDocument.createElement('script');
+        script.textContent = runtime;
+        frame.contentDocument.body.appendChild(script);
+        const frozen = await frame.contentWindow.__hsEditor.freeze();
+        for (const pass of ['live', 'reloaded']) {
+          if (pass === 'reloaded') {
+            await new Promise((resolve) => { frame.onload = resolve; frame.srcdoc = frozen; });
+          }
+          const pages = [...frame.contentDocument.querySelectorAll('.hs-page')];
+          if (pages.length !== item.count) throw new Error(`${pass}: expected ${item.count} pages, got ${pages.length}`);
+          if (item.labels && pages.some((page, i) => item.labels[i] && !page.textContent.includes(item.labels[i]))) {
+            throw new Error(`${pass}: slide order/content changed`);
+          }
+          for (let i = 0; i < pages.length; i++) {
+            const r = pages[i].getBoundingClientRect();
+            if (r.width < 320 || r.height < 240) throw new Error(`${pass}: page ${i + 1} has invalid dimensions`);
+            const pageStyle = frame.contentWindow.getComputedStyle(pages[i]);
+            if (pageStyle.display === 'none' || pageStyle.visibility === 'hidden' || Number(pageStyle.opacity) < 0.05) {
+              throw new Error(`${pass}: page ${i + 1} is hidden`);
+            }
+            if (i && r.top < pages[i - 1].getBoundingClientRect().bottom - 1) {
+              throw new Error(`${pass}: page ${i + 1} overlaps the preceding page`);
+            }
+            if (item.labels && item.editableChildren !== false && pages[i].querySelectorAll('.hs-el').length < 2) {
+              throw new Error(`${pass}: page ${i + 1} has no editable child objects`);
+            }
+            const children = [...pages[i].querySelectorAll('.hs-el')];
+            if (item.labels && !children.some((el) => {
+              const style = frame.contentWindow.getComputedStyle(el);
+              const rect = el.getBoundingClientRect();
+              return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) >= 0.05 && rect.width > 0 && rect.height > 0;
+            })) {
+              throw new Error(`${pass}: page ${i + 1} has no visible editable content`);
+            }
+            for (const art of item.sharedArt || []) {
+              const el = pages[i].querySelector(`:scope > ${art.selector}`);
+              if (!el || !el.hasAttribute('data-hs-shared-art')) throw new Error(`${pass}: page ${i + 1} lost ${art.selector}`);
+              const sr = el.getBoundingClientRect(), pr = pages[i].getBoundingClientRect();
+              const style = frame.contentWindow.getComputedStyle(el);
+              const near = (a, b) => Math.abs(a - b) < 2;
+              if (!near(sr.left - pr.left, art.x) || !near(sr.top - pr.top, art.y) ||
+                  !near(sr.width, art.w) || !near(sr.height, art.h) ||
+                  Math.abs(Number(style.opacity) - art.opacity) > 0.005 || style.zIndex !== art.z) {
+                throw new Error(`${pass}: page ${i + 1} changed ${art.selector} geometry or paint`);
+              }
+            }
+            for (const selector of item.noChrome || []) {
+              if (pages[i].querySelector(selector)) throw new Error(`${pass}: page ${i + 1} retained ${selector}`);
+            }
+          }
+        }
+        if (item.presentation) {
+          frame.contentWindow.Moveable = function () {};
+          const editorScript = frame.contentDocument.createElement('script');
+          editorScript.textContent = runtime;
+          frame.contentDocument.body.appendChild(editorScript);
+          const pages = [...frame.contentDocument.querySelectorAll('.hs-page')];
+          const firstHeading = pages[0].querySelector('h1');
+          if (firstHeading) firstHeading.textContent += ' — edited';
+          for (const index of [0, 5, 11, 0]) {
+            const size = showEditorPage(frame.contentDocument, index);
+            if (!size || size.w !== item.presentation.w || size.h !== item.presentation.h) {
+              throw new Error(`page ${index + 1} changed its native dimensions`);
+            }
+            for (let i = 0; i < pages.length; i++) {
+              const display = frame.contentWindow.getComputedStyle(pages[i]).display;
+              if (i === index ? display === 'none' : display !== 'none') {
+                throw new Error(`page ${index + 1} did not exclusively show its artboard`);
+              }
+            }
+          }
+          if (firstHeading && !firstHeading.textContent.endsWith(' — edited')) throw new Error('page switch lost an edit');
+          const sheet = frame.contentDocument.getElementById('hs-editor-page-presentation');
+          frame.contentWindow.snapdom = { toBlob: () => {
+            if (!sheet.disabled || frame.contentWindow.getComputedStyle(pages[5]).display === 'none') {
+              throw new Error('capture did not reveal hidden pages');
+            }
+            return Promise.resolve(new Blob());
+          }};
+          await frame.contentWindow.__hsEditor.capture(5, { scale: 1, type: 'image/png', backgroundColor: '#fff' });
+          if (sheet.disabled || frame.contentWindow.getComputedStyle(pages[5]).display !== 'none') {
+            throw new Error('capture did not restore selected page visibility');
+          }
+        }
+        row.className = 'pass';
+        row.textContent += ' — pass';
+        passed++;
+      } catch (error) {
+        row.className = 'fail';
+        row.textContent += ` — FAIL: ${error.message}`;
+      } finally {
+        frame.remove();
+      }
+    }
+    document.querySelector('#summary').textContent = `${passed}/${cases.length} passed`;
+    document.body.dataset.passed = String(passed === cases.length);
+  </script>
+</body>
+</html>
