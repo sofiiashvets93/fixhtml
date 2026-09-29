@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { applyLog, describeCommand, type Command } from './assetEdit';
 import { getAdapter } from './adapter';
 import { isContract, needsRender, renderToStatic } from './editView';
+import { showEditorPage } from './pageNavigation';
 import moveableSource from 'moveable/dist/moveable.min.js?raw';
 import iframeRuntimeSource from './iframeRuntime.js?raw';
 // Global (window.snapdom) build, injected into the iframe for browser-build export.
@@ -104,6 +105,7 @@ export function App() {
   const [log, setLog] = useState<Command[]>([]);
   const [pointer, setPointer] = useState(0);
   const [pageCount, setPageCount] = useState(0);
+  const [activePage, setActivePage] = useState(0);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [conflict, setConflict] = useState(false);
   const [draftHtml, setDraftHtml] = useState<string | null>(null);
@@ -129,6 +131,7 @@ export function App() {
   const pointerRef = useRef(0);
   const zoomRef = useRef(zoom);
   const pendingFreezeRef = useRef<string | null>(null);
+  const activePageRef = useRef(0);
   zoomRef.current = zoom;
 
   const dirty = pointer > 0;
@@ -180,6 +183,8 @@ export function App() {
     mtimeRef.current = null;
     setSelection(null);
     setSelectCount(0);
+    setActivePage(0);
+    activePageRef.current = 0;
     setLog([]);
     setPointer(0);
     logRef.current = [];
@@ -345,11 +350,16 @@ export function App() {
     const win = frame?.contentWindow as IframeWindow | null | undefined;
     if (!cdoc?.body || !win || !selectedPath) return;
 
-    const w = Math.max(cdoc.body.scrollWidth, cdoc.documentElement.scrollWidth);
-    const h = Math.max(cdoc.body.scrollHeight, cdoc.documentElement.scrollHeight);
-    setFrameSize({ w, h });
     const pc = cdoc.querySelectorAll('.hs-page').length;
     setPageCount(pc);
+    const current = Math.min(activePageRef.current, Math.max(0, pc - 1));
+    const pageSize = pc > 1 ? showEditorPage(cdoc, current) : null;
+    setFrameSize(pageSize ?? {
+      w: Math.max(cdoc.body.scrollWidth, cdoc.documentElement.scrollWidth),
+      h: Math.max(cdoc.body.scrollHeight, cdoc.documentElement.scrollHeight),
+    });
+    setActivePage(current);
+    activePageRef.current = current;
 
     type Wired = Document & { __hsWired?: boolean };
     if ((cdoc as Wired).__hsWired) return;
@@ -548,16 +558,23 @@ export function App() {
   }
 
   function goToPage(i: number) {
-    const cdoc = iframeRef.current?.contentDocument;
+    const frame = iframeRef.current;
+    const cdoc = frame?.contentDocument;
     const stage = stageRef.current;
-    if (!cdoc || !stage) return;
-    const page = cdoc.querySelectorAll<HTMLElement>('.hs-page')[i];
-    if (!page) return;
-    stage.scrollTop += page.getBoundingClientRect().top - stage.getBoundingClientRect().top - 20;
+    if (!frame || !cdoc || !stage || exporting || i < 0 || i >= pageCount) return;
+    // Commit text before hiding its slide, then clear its selection.
+    (cdoc.activeElement as HTMLElement | null)?.blur();
+    editor()?.deselect();
+    const size = showEditorPage(cdoc, i);
+    if (!size) return;
+    setFrameSize(size);
+    setActivePage(i);
+    activePageRef.current = i;
+    stage.scrollTo(0, 0);
   }
 
   const viewportStyle = useMemo(
-    () => ({ transform: `scale(${zoom})`, width: frameSize.w, height: frameSize.h * zoom }),
+    () => ({ width: frameSize.w * zoom, height: frameSize.h * zoom }),
     [zoom, frameSize]
   );
 
@@ -641,10 +658,22 @@ export function App() {
 
         {pageCount > 1 && (
           <>
-            <p className="section-label" style={{ marginTop: 24 }}>Pages</p>
+            <p className="section-label" style={{ marginTop: 24 }}>Slides</p>
+            <div className="slide-controls">
+              <button aria-label="Previous slide" disabled={activePage === 0 || exporting} onClick={() => goToPage(activePage - 1)}>←</button>
+              <span aria-live="polite">Slide {activePage + 1} of {pageCount}</span>
+              <button aria-label="Next slide" disabled={activePage === pageCount - 1 || exporting} onClick={() => goToPage(activePage + 1)}>→</button>
+            </div>
             <div className="pagebar">
               {Array.from({ length: pageCount }, (_, i) => (
-                <button key={i} onClick={() => goToPage(i)}>{i + 1}</button>
+                <button
+                  key={i}
+                  className={i === activePage ? 'on' : ''}
+                  aria-current={i === activePage ? 'page' : undefined}
+                  aria-label={`Go to slide ${i + 1}`}
+                  disabled={exporting}
+                  onClick={() => goToPage(i)}
+                >{i + 1}</button>
               ))}
             </div>
           </>
@@ -884,6 +913,7 @@ export function App() {
               onLoad={handleFrameLoad}
               width={frameSize.w}
               height={frameSize.h}
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
             />
           </div>
         )}

@@ -360,8 +360,8 @@
   // browser demo needs no server/Playwright. This is the SINGLE copy of the lift
   // (the old server freeze path was removed once both adapters use this). Converts
   // a free-form page to contract form and returns the contract HTML. A slide deck
-  // (stacked same-class siblings where only the current slide is shown, driven by
-  // a navigation script the edit view strips) becomes one hs-page PER SLIDE;
+  // (explicit slide markup, or stacked panels whose navigation script was
+  // stripped) becomes one hs-page PER SLIDE;
   // anything else becomes a single page. --------------------------------------
   function freeze() {
     return document.fonts.ready.then(function () {
@@ -400,40 +400,87 @@
         return r.width > 1 && r.height > 1;
       };
 
-      // Deck detection: walk down through wrapper layers looking for >=2 siblings
-      // sharing tag+class where at least one is shown at panel scale and at least
-      // one is hidden — slides waiting for a navigation script we stripped.
+      // Inspect sibling groups throughout the document, including decks behind
+      // wrappers that are smaller than other page content. Ordinary card grids
+      // should remain a single page: an all-visible group needs explicit slide
+      // semantics or a named deck; an unnamed group needs the hidden-slide
+      // pattern left by a stripped controller.
       function findSlides() {
-        var node = document.body;
-        for (var depth = 0; node && depth < 6; depth++) {
-          var ch = kids(node);
-          var groups = {};
+        var semantic = function (el) {
+          if (el.hasAttribute('data-slide') || el.getAttribute('aria-roledescription') === 'slide') return true;
+          if (/^slide[-_]?\d+$/i.test(el.id)) return true;
+          return Array.prototype.some.call(el.classList, function (t) {
+            return /^(slide|slide-item|slide-page|slide-\d+|slide_\d+)$/i.test(t);
+          });
+        };
+        var deckName = function (el) {
+          return el && !semantic(el) && /(?:^|[\s_-])(slides|deck|presentation)(?:$|[\s_-])/i.test(
+            (el.id || '') + ' ' + (el.className || '') + ' ' + (el.getAttribute('aria-label') || '')
+          );
+        };
+        var panel = function (el) {
+          var r = el.getBoundingClientRect();
+          var s = getComputedStyle(el);
+          // A hidden slide can have a zero rect; use its declared dimensions.
+          return { w: r.width || parseFloat(s.width) || 0, h: r.height || parseFloat(s.height) || 0 };
+        };
+        var consistent = function (g) {
+          var visible = g.filter(shown);
+          var measured = visible.length ? visible : g;
+          var base = panel(measured[0]);
+          if (base.w < 320 || base.h < 240) return false;
+          return measured.every(function (el) {
+            var p = panel(el);
+            return Math.abs(p.w - base.w) <= base.w * 0.25 && Math.abs(p.h - base.h) <= base.h * 0.25;
+          });
+        };
+        var best = null, bestScore = -1;
+        var queue = [document.body];
+        // Bound traversal for very large imported documents. Every candidate is
+        // a group of direct siblings so the freeze can keep their original order.
+        for (var q = 0; q < queue.length && q < 3000; q++) {
+          var node = queue[q], ch = kids(node);
+          Array.prototype.push.apply(queue, ch);
+          if (ch.length < 2) continue;
+          var groups = [];
+          var explicit = ch.filter(semantic);
+          if (explicit.length >= 2) groups.push({ list: explicit, score: 3 });
+          if (deckName(node)) {
+            // Skip controls beside the slides in a named deck.
+            var deckPanels = ch.filter(function (el) {
+              var p = panel(el);
+              return semantic(el) || (p.w >= 320 && p.h >= 240);
+            });
+            if (deckPanels.length >= 2) groups.push({ list: deckPanels, score: 2 });
+          }
+          var shared = {};
           ch.forEach(function (el) {
             Array.prototype.forEach.call(el.classList, function (t) {
+              // State classes do not identify a slide family. A generic class
+              // only qualifies when at least one panel is hidden.
+              if (/^(active|current|visible|show|shown|on)$/i.test(t)) return;
               var k = el.tagName + '.' + t;
-              (groups[k] = groups[k] || []).push(el);
+              (shared[k] = shared[k] || []).push(el);
             });
           });
-          var best = null;
-          Object.keys(groups).forEach(function (k) {
-            var g = groups[k];
-            if (g.length < 2 || (best && g.length <= best.length)) return;
-            var vis = g.filter(shown);
-            if (vis.length === 0 || vis.length === g.length) return;
-            var r = vis[0].getBoundingClientRect();
-            if (r.width < 320 || r.height < 240) return; // slides are panel-scale
-            best = g;
+          Object.keys(shared).forEach(function (k) {
+            var g = shared[k];
+            if (g.length >= 2 && g.some(shown) && g.some(function (el) { return !shown(el); }) &&
+                g.some(function (el) {
+                  var p = panel(el);
+                  return shown(el) && p.w >= Math.min(800, innerWidth * 0.5) && p.h >= Math.min(450, innerHeight * 0.4);
+                })) {
+              groups.push({ list: g, score: 1 });
+            }
           });
-          if (best) return best;
-          // No group here — descend into the largest child (the wrapper/stage).
-          var next = null, area = 0;
-          ch.forEach(function (c) {
-            var r = c.getBoundingClientRect(), a = r.width * r.height;
-            if (a > area) { area = a; next = c; }
+          groups.forEach(function (candidate) {
+            var g = candidate.list;
+            if (g.length < 2 || !consistent(g)) return;
+            var score = candidate.score * 10000 + g.length;
+            if (score > bestScore) { bestScore = score; best = g; }
           });
-          node = next;
         }
-        return null;
+        return best;
       }
 
       // The deck's controller marked the current slide with a state class
@@ -464,6 +511,50 @@
       // Turn every slide "on", then re-plumb the deck for flow: slides become
       // in-flow pages stacked vertically; the wrapper chain (fixed viewports,
       // scaled stages) is neutralized so nothing clips, scales, or overlaps.
+      // Shared artwork can live beside the slides in the stage (a paper texture,
+      // logo, or decorative frame). Clone its resolved appearance before moving
+      // it under each page: selectors depending on the old parent may stop
+      // matching after that move.
+      function sharedArtwork(slides, container) {
+        var stageW = container.offsetWidth, stageH = container.offsetHeight;
+        var pageW = slides[0].offsetWidth, pageH = slides[0].offsetHeight;
+        if (!stageW || !stageH || !pageW || !pageH ||
+            Math.abs(stageW - pageW) > pageW * 0.25 || Math.abs(stageH - pageH) > pageH * 0.25) return [];
+        var ch = kids(container), first = ch.indexOf(slides[0]), last = ch.indexOf(slides[slides.length - 1]);
+        var navName = /(?:^|[\s_-])(nav|controls?|progress|counter|pagination|pager|hotzone|toggle|previous|next|editor)(?:$|[\s_-])/i;
+        var painted = function (el, s) {
+          if (s.backgroundImage !== 'none' || (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)')) return true;
+          if (s.boxShadow !== 'none' || s.borderTopStyle !== 'none' && parseFloat(s.borderTopWidth) > 0) return true;
+          return el.matches('img,svg,canvas,video,picture') || !!el.querySelector('img,svg,canvas,video,picture');
+        };
+        var snapshotStyles = function (source, target) {
+          var originals = [source].concat(Array.prototype.slice.call(source.querySelectorAll('*')));
+          var copies = [target].concat(Array.prototype.slice.call(target.querySelectorAll('*')));
+          originals.forEach(function (el, i) {
+            var cs = getComputedStyle(el), out = copies[i];
+            for (var p = 0; p < cs.length; p++) out.style.setProperty(cs[p], cs.getPropertyValue(cs[p]));
+            out.style.setProperty('animation', 'none', 'important');
+            out.style.setProperty('transition', 'none', 'important');
+          });
+        };
+        return ch.reduce(function (out, el, index) {
+          if (slides.indexOf(el) !== -1 || (index > first && index < last)) return out;
+          var s = getComputedStyle(el), r = el.getBoundingClientRect();
+          var name = (el.id || '') + ' ' + (el.className || '') + ' ' + (el.getAttribute('role') || '');
+          if (s.position !== 'absolute' || s.display === 'none' || s.visibility === 'hidden' ||
+              parseFloat(s.opacity) <= 0 || (s.pointerEvents !== 'none' && el.getAttribute('aria-hidden') !== 'true') ||
+              r.width < 1 || r.height < 1 || navName.test(name) ||
+              el.matches('button,a,input,select,textarea,[role="button"]') ||
+              el.querySelector('button,a,input,select,textarea,[role="button"],[tabindex]') ||
+              !painted(el, s)) return out;
+          var copy = el.cloneNode(true);
+          snapshotStyles(el, copy);
+          copy.setAttribute('data-hs-shared-art', '');
+          out.push({ node: copy, after: index > last });
+          return out;
+        }, []);
+      }
+
       function prepareDeck(slides) {
         var states = stateClasses(slides);
         slides.forEach(function (s) {
@@ -472,6 +563,10 @@
           s.style.visibility = 'visible';
           s.style.opacity = '1';
           s.style.pointerEvents = 'auto';
+          // Author styles can use !important on the inactive state.
+          if (getComputedStyle(s).display === 'none') s.style.setProperty('display', 'block', 'important');
+          if (getComputedStyle(s).visibility === 'hidden') s.style.setProperty('visibility', 'visible', 'important');
+          if (parseFloat(getComputedStyle(s).opacity) < 0.05) s.style.setProperty('opacity', '1', 'important');
         });
         finishAnims(); // the class flips may have started entrance transitions
         // Elements still waiting for an entrance the controller would have run
@@ -492,9 +587,10 @@
         // Layout size (offsetWidth ignores ancestor scale transforms), measured
         // while the deck geometry is still intact.
         var sizes = slides.map(function (s) { return { w: s.offsetWidth, h: s.offsetHeight }; });
-        // Deck chrome: siblings of the slides (page numbers, nav) and fixed
-        // overlays up the chain (buttons, hotzones) don't belong in frozen pages.
+        // Keep painted, noninteractive stage artwork on every page. Navigation
+        // chrome (buttons, counters, progress, hotzones) still gets removed.
         var container = slides[0].parentElement;
+        var artwork = sharedArtwork(slides, container);
         kids(container).forEach(function (c) { if (slides.indexOf(c) === -1) c.remove(); });
         var anc = container;
         while (anc && anc !== document.documentElement) {
@@ -504,13 +600,26 @@
             });
           }
           anc.style.position = 'static';
+          anc.style.display = 'block';
           anc.style.transform = 'none';
           anc.style.overflow = 'visible';
           anc.style.width = 'auto';
           anc.style.height = 'auto';
+          anc.style.minWidth = anc.style.minHeight = '0';
+          anc.style.maxWidth = anc.style.maxHeight = 'none';
           anc.style.left = anc.style.top = anc.style.right = anc.style.bottom = 'auto';
           anc = anc.parentElement;
         }
+        document.documentElement.style.display = 'block';
+        document.documentElement.style.overflow = 'visible';
+        document.documentElement.style.height = 'auto';
+        document.documentElement.style.maxHeight = 'none';
+        // A deck hidden at the ancestor level had no measurable boxes above.
+        // Measure again once its wrapper chain is in flow.
+        slides.forEach(function (s, i) {
+          if (sizes[i].w < 320) sizes[i].w = s.offsetWidth;
+          if (sizes[i].h < 240) sizes[i].h = s.offsetHeight;
+        });
         slides.forEach(function (s, i) {
           s.style.position = 'relative';
           s.style.left = s.style.top = s.style.right = s.style.bottom = 'auto';
@@ -519,6 +628,7 @@
           s.style.height = sizes[i].h + 'px';
           s.style.margin = '0';
         });
+        return artwork;
       }
 
       // The lift: pin pageEl's blocks in place as absolutely-positioned hs-els.
@@ -580,8 +690,15 @@
 
       var slides = findSlides();
       if (slides) {
-        prepareDeck(slides);
+        var artwork = prepareDeck(slides);
         slides.forEach(function (s) { liftPage(s, true); });
+        slides.forEach(function (s) {
+          var first = s.firstChild;
+          artwork.forEach(function (item) {
+            var copy = item.node.cloneNode(true);
+            if (item.after) s.appendChild(copy); else s.insertBefore(copy, first);
+          });
+        });
       } else {
         var top = kids(document.body);
         liftPage(top.length === 1 ? top[0] : document.body, false);
@@ -833,14 +950,17 @@
     if (!page) return Promise.resolve(null);
     setSelection([]); // no Moveable handles in the shot
     return document.fonts.ready.then(function () {
-      return window.snapdom.toBlob(page, {
+      var editorStyle = document.getElementById('hs-editor-page-presentation');
+      var wasDisabled = editorStyle && editorStyle.disabled;
+      if (editorStyle) editorStyle.disabled = true;
+      return Promise.resolve().then(function () { return window.snapdom.toBlob(page, {
         scale: opts.scale,
         dpr: 1, // scale is the sole multiplier (not × devicePixelRatio)
         type: opts.type,
         embedFonts: true, // snapdom defaults this off — custom faces need it
         backgroundColor: opts.backgroundColor,
         exclude: ['.moveable-control-box'],
-      });
+      }); }).finally(function () { if (editorStyle) editorStyle.disabled = wasDisabled; });
     });
   }
 

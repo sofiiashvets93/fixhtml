@@ -91,7 +91,7 @@ body {
 .stage {
   overflow: auto;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   /* top clears the fixed toolbar so wide artboards never start underneath it */
   padding: 76px 40px 40px;
@@ -105,12 +105,17 @@ body {
 }
 
 .viewport {
-  transform-origin: top center;
+  position: relative;
+  flex-shrink: 0;
+  margin-inline: auto;
   box-shadow: 0 1px 2px rgba(20, 22, 30, 0.07), 0 8px 28px rgba(20, 22, 30, 0.08);
   border-radius: 2px;
 }
 
 .viewport iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   border: 0;
   display: block;
   background: transparent;
@@ -194,6 +199,29 @@ body {
   flex-wrap: wrap;
   gap: 6px;
 }
+
+.slide-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.slide-controls button {
+  width: 32px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.slide-controls button:disabled { opacity: 0.4; cursor: default; }
+.slide-controls button:hover:not(:disabled) { border-color: var(--accent); }
 
 .pagebar button {
   width: 32px;
